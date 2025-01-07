@@ -6,14 +6,22 @@ export class HTTPRequests extends Component {
         super(props)
 
         this.state = {
-            posts: []
+            posts: [],
+            error: null
         }
     }
     componentDidMount() {
         axios.get('https://jsonplaceholder.typicode.com/posts')
             .then(response => {
                 this.setState({
-                    posts: response.data
+                    posts: Array.isArray(response.data)
+                        ? response.data
+                        : [response.data]
+                })
+            })
+            .catch(error => {
+                this.setState({
+                    error: error.message
                 })
             })
     }
@@ -22,7 +30,22 @@ export class HTTPRequests extends Component {
         return (
             <div>
                 <h2>Posts:</h2>
-                {JSON.stringify(this.state.posts)}
+                {
+                    posts.length ? (
+                        posts.map(post => {
+                            <div key={post.id}>
+                                <h2>{post.id}. {post.title}</h2>
+                                <h4>By User ID {post.userId}</h4>
+                                <p>{post.body}</p>
+                                <hr />
+                            </div>
+                        })
+                    ) : (
+                        this.state.error
+                        ? <p>{this.state.error}</p>
+                        : <h4>Loading posts ...</h4>
+                    )
+                }
             </div>
         )
     }
